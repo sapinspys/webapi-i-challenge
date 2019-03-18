@@ -4,7 +4,7 @@ const port = 5000;
 // ES2015 module importing: import express from 'express';
 // Importing using require() method:
 const express = require('express');
-const database = require('./data/db.js');
+const db = require('./data/db.js');
 
 // Creating an express application (used to configure server):
 const server = express();
@@ -14,52 +14,63 @@ server.use(express.json()); // ADD THIS LINE TO READ REQUEST BODIES...
 
 // POST: Creates a user using the information sent inside the `request body`.
 server.post(`/api/users`,  (req, res) => {
-  try {
-    const userData = req.body
-    if (userData.name.length === 0 || userData.bio.length === 0) {
-      // 400 => BAD REQUEST
-      res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
-    } else {
-      // 201 => CREATED
-      res.status(201).json(database.insert(userData)) 
-    }
-  } catch(error) {
-    // 505 => INTERNAL SERVER ERROR
-    res.status(500).json({ error: "There was an error while saving the user to the database" })
+  const userData = req.body
+  if (userData.name.length === 0 || userData.bio.length === 0) {
+    // 400 => BAD REQUEST
+    res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
+  } else {
+    db.insert(userData)
+      .then(newUserId => {
+        db.findById(newUserId.id)
+          .then(newUser => {
+            // 201 => CREATED
+            res.status(201).json(newUser);
+          })
+          .catch(error => {
+            res.status(500).json({ error: "The new user's information could not be retrieved." })
+          })
+      })
+      .catch(error => {
+        // 505 => INTERNAL SERVER ERROR
+        res.status(500).json({ error: "There was an error while saving the user to the database" })
+      })
   }
 })
 
-// GET: returns an array of all the user objects contained in the database. 
+// GET: returns an array of all the user objects contained in the db. 
 server.get(`/api/users`, (req, res) => {
   // 200 => OK
-  database.find().then(allUsers => {
-    res.status(200).json(allUsers)
-  }).catch(error => {
-    res.status(500).json({ error: "The users could not be retrieved." })
-  })
+  db.find()
+    .then(allUsers => {
+      res.status(200).json(allUsers)
+    })
+    .catch(error => {
+      res.status(500).json({ error: "The users could not be retrieved." })
+    })
 })
 
 // GET: Returns the user object with the specified `id`. 
 server.get(`/api/users/:id`, (req, res) => {
-  try {
-    const id = req.params.id;
-    const foundUser = database.findById(id)
-    if (foundUser.length === 0) {
-      // 404 => NOT FOUND
-      res.status(404).json({ message: "The user with the specified ID does not exist." })
-    } else {
-      res.status(200).json(foundUser)
-    }
-  } catch(error) {
-    res.status(500).json({ error: "The user information could not be retrieved." })
-  }
+  const id = req.params.id;
+  db.findById(id)
+    .then(foundUser => {
+      if (!foundUser) {
+        // 404 => NOT FOUND
+        res.status(404).json({ message: `The user with the specified ID does not exist.` })
+      } else {
+        res.status(200).json(foundUser)
+      }
+    })
+    .catch(error => {
+      res.status(500).json({ error: "The user information could not be retrieved." })
+    })
 })
 
 // DELETE: Removes the user with the specified `id` and returns the deleted user.
 server.delete(`/api/users/:id`, (req,res) => {
   try {
     const id = req.params.id;
-    const usersDeleted = database.remove(id)
+    const usersDeleted = db.remove(id)
     if (usersDeleted.length === 0) {
       // 404 => NOT FOUND
       res.status(404).json({ message: "The user with the specified ID does not exist." })
@@ -76,13 +87,13 @@ server.put(`/api/users/:id`, (req,res) => {
   try {
     const id = req.params.id;
     const userData = req.body;
-    const usersUpdated = database.update(id, changes);
+    const usersUpdated = db.update(id, changes);
     if (userData.name.length === 0 || userData.bio.length === 0) {
       res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
     } else if (usersUpdated === 0) {
       res.status(404).json({ message: "The user with the specified ID does not exist." })
     } else {
-      res.status(200).json(database.findById(id));
+      res.status(200).json(db.findById(id));
     }
   } catch(error) {
     res.status(500).json({ error: "There was an error while saving the user to the database" })
