@@ -97,19 +97,28 @@ server.delete(`/api/users/:id`, (req,res) => {
 
 // POST: Updates the user with the specified `id` using data from the `request body`. Returns the modified document, **NOT the original**. 'UPDATE' of CRUD.
 server.put(`/api/users/:id`, (req,res) => {
-  try {
-    const id = req.params.id;
-    const userData = req.body;
-    const usersUpdated = db.update(id, changes);
-    if (userData.name.length === 0 || userData.bio.length === 0) {
-      res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
-    } else if (usersUpdated === 0) {
-      res.status(404).json({ message: "The user with the specified ID does not exist." })
-    } else {
-      res.status(200).json(db.findById(id));
-    }
-  } catch(error) {
-    res.status(500).json({ error: "There was an error while saving the user to the database" })
+  const id = req.params.id;
+  const userData = req.body;
+  if (userData.name.length === 0 || userData.bio.length === 0) {
+    res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
+  } else {
+    db.update(id, userData)
+      .then(numUsersUpdated => {
+        if (numUsersUpdated === 0) {
+          res.status(404).json({ message: "The user with the specified ID does not exist." })
+        } else {
+          db.findById(id)
+            .then(user => {
+              res.status(200).json(user);
+            })
+            .catch(error => {
+            res.status(500).json({ error: "The new user's information could not be retrieved." })
+            })
+        }
+      })
+      .catch(error => {
+        res.status(500).json({ error: "The user information could not be modified." })
+      }) 
   }
 })
 
