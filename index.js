@@ -20,9 +20,11 @@ server.post(`/api/users`,  (req, res) => {
       res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
     } else {
       db.insert(userData)
-      res.status(201).json(userData) // 201 CREATED
+      // 201 CREATED
+      res.status(201).json(userData) 
     }
   } catch(error) {
+    // 505 INTERNAL SERVER ERROR
     res.status(500).json({ error: "There was an error while saving the user to the database" })
   }
 })
@@ -33,6 +35,22 @@ server.get('/api/users', (req, res) => {
     res.status(200).json(db.find())
   } catch(error) {
     res.status(500).json({ error: "The users' information could not be retrieved." })
+  }
+})
+
+// GET: Returns the user object with the specified `id`. 
+
+server.get('/api/users/:id', (req, res) => {
+  try {
+    const foundUser = db.findById(req.body.id)
+    if (foundUser.length === 0) {
+      // 404 NOT FOUND
+      res.status(404).json({ message: "The user with the specified ID does not exist." })
+    } else {
+      res.status(200).json(foundUser)
+    }
+  } catch(error) {
+    res.status(500).json({ error: "The user information could not be retrieved." })
   }
 })
 
