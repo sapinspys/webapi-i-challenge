@@ -15,8 +15,13 @@ server.use(express.json());
 // POST: Creates a user using the information sent inside the `request body`.
 server.post(`/api/users`,  (req, res) => {
   try {
-    const userInfo = req.body
-    res.status(201).json(userInfo)
+    const userData = req.body
+    if (userData.name.length === 0 || userData.bio.length === 0) {
+      res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
+    } else {
+      db.insert(userData)
+      res.status(201).json(userData)
+    }
   } catch(error) {
     res.status(500).json({ error: "There was an error while saving the user to the database" })
   }
