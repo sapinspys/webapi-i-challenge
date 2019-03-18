@@ -8,11 +8,19 @@ const db = require('./data/db');
 
 // Creates an express application (used to configure server):
 const server = express();
+// ADD THIS LINE TO READ REQUEST BODIES:
+server.use(express.json());
 
 // Setting up route handler functions on endpoints:
-
 // POST: Creates a user using the information sent inside the `request body`.
-// server.post(`/api/users`, )
+server.post(`/api/users`,  (req, res) => {
+  try {
+    const userInfo = req.body
+    res.status(201).json(userInfo)
+  } catch(error) {
+    res.status(500).json({ error: "There was an error while saving the user to the database" })
+  }
+})
 
 // GET: returns an array of all the user objects contained in the database. 
 // server.get('/api/users', (req, res) => {
@@ -20,4 +28,6 @@ const server = express();
 // })
 
 // Turning on the server:
-server.listen(8000, () => console.log('API running on port 8000'))
+server.listen(5000, () =>
+  console.log('Server running on http://localhost:5000')
+)
