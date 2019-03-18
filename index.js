@@ -30,7 +30,7 @@ server.post(`/api/users`,  (req, res) => {
 })
 
 // GET: returns an array of all the user objects contained in the database. 
-server.get('/api/users', (req, res) => {
+server.get(`/api/users`, (req, res) => {
   try {
     // 200 => OK
     res.status(200).json(db.find())
@@ -55,6 +55,19 @@ server.get('/api/users/:id', (req, res) => {
 })
 
 // DELETE: Removes the user with the specified `id` and returns the deleted user.
+server.delete(`/api/users/:id`, (req,res) => {
+  try {
+    const usersDeleted = db.remove(req.body.id)
+    if (usersDeleted.length === 0) {
+      // 404 => NOT FOUND
+      res.status(404).json({ message: "The user with the specified ID does not exist." })
+    } else {
+      res.status(200).json(req.body)
+    }
+  } catch(error) {
+    res.status(500).json({ error: "The user could not be removed." })
+  }
+})
 
 // Turning on the server:
 server.listen(5000, () =>
