@@ -3,6 +3,7 @@
 // ES2015 import method: import express from 'express';
 // Importing using require() method:
 const express = require('express');
+const port = 5000;
 const db = require('./data/db');
 
 // Creating an express application (used to configure server):
@@ -19,9 +20,8 @@ server.post(`/api/users`,  (req, res) => {
       // 400 => BAD REQUEST
       res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
     } else {
-      db.insert(userData)
       // 201 => CREATED
-      res.status(201).json(userData) 
+      res.status(201).json(db.insert(userData)) 
     }
   } catch(error) {
     // 505 => INTERNAL SERVER ERROR
@@ -33,16 +33,18 @@ server.post(`/api/users`,  (req, res) => {
 server.get(`/api/users`, (req, res) => {
   try {
     // 200 => OK
-    res.status(200).json(db.find())
+    const allUsers = db.find();
+    res.status(200).json(allUsers)
   } catch(error) {
-    res.status(500).json({ error: "The users' information could not be retrieved." })
+    res.status(500).json({ error: "The users could not be retrieved." })
   }
 })
 
 // GET: Returns the user object with the specified `id`. 
 server.get('/api/users/:id', (req, res) => {
   try {
-    const foundUser = db.findById(req.body.id)
+    const id = req.params.id;
+    const foundUser = db.findById(id)
     if (foundUser.length === 0) {
       // 404 => NOT FOUND
       res.status(404).json({ message: "The user with the specified ID does not exist." })
@@ -57,7 +59,8 @@ server.get('/api/users/:id', (req, res) => {
 // DELETE: Removes the user with the specified `id` and returns the deleted user.
 server.delete(`/api/users/:id`, (req,res) => {
   try {
-    const usersDeleted = db.remove(req.body.id)
+    const id = req.params.id;
+    const usersDeleted = db.remove(id)
     if (usersDeleted.length === 0) {
       // 404 => NOT FOUND
       res.status(404).json({ message: "The user with the specified ID does not exist." })
@@ -69,7 +72,25 @@ server.delete(`/api/users/:id`, (req,res) => {
   }
 })
 
+// POST: Updates the user with the specified `id` using data from the `request body`. Returns the modified document, **NOT the original**.
+server.put(`/api/users/:id`, (req,res) => {
+  try {
+    const id = req.params.id;
+    const userData = req.body;
+    const usersUpdated = db.update(id, changes);
+    if (userData.name.length === 0 || userData.bio.length === 0) {
+      res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
+    } else if (usersUpdated === 0) {
+      res.status(404).json({ message: "The user with the specified ID does not exist." })
+    } else {
+      res.status(200).json(db.findById(id));
+    }
+  } catch(error) {
+    res.status(500).json({ error: "There was an error while saving the user to the database" })
+  }
+})
+
 // Turning on the server:
-server.listen(5000, () =>
-  console.log('Server running on http://localhost:5000')
+server.listen(port, () =>
+  console.log(`Server running on http://localhost:${port}`)
 )
