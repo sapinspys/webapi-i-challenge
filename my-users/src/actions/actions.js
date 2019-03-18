@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 export const GET_USERS = 'FETCHING';
 export const SUCCESS = 'SUCCESS';
 export const FAILURE = 'FAILURE';
