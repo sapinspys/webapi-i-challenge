@@ -4,7 +4,7 @@ const port = 5000;
 // ES2015 module importing: import express from 'express';
 // Importing using require() method:
 const express = require('express');
-const database = require('./data/db');
+const database = require('./data/db.js');
 
 // Creating an express application (used to configure server):
 const server = express();
@@ -31,13 +31,12 @@ server.post(`/api/users`,  (req, res) => {
 
 // GET: returns an array of all the user objects contained in the database. 
 server.get(`/api/users`, (req, res) => {
-  try {
-    // 200 => OK
-    const allUsers = database.find();
+  // 200 => OK
+  database.find().then(allUsers => {
     res.status(200).json(allUsers)
-  } catch(error) {
+  }).catch(error => {
     res.status(500).json({ error: "The users could not be retrieved." })
-  }
+  })
 })
 
 // GET: Returns the user object with the specified `id`. 
