@@ -9,7 +9,7 @@ import { Provider } from 'react-redux'
 import thunk from 'redux-thunk';
 import logger from 'redux-logger';
 
-import rootReducer from './reducers';
+import rootReducer from './reducers/userReducers';
 
 const store = createStore(
   rootReducer,
