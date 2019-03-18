@@ -1,10 +1,10 @@
 // implement your API here:
+const port = 5000;
 
-// ES2015 import method: import express from 'express';
+// ES2015 module importing: import express from 'express';
 // Importing using require() method:
 const express = require('express');
-const port = 5000;
-const db = require('./data/db');
+const database = require('./data/db');
 
 // Creating an express application (used to configure server):
 const server = express();
@@ -21,7 +21,7 @@ server.post(`/api/users`,  (req, res) => {
       res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
     } else {
       // 201 => CREATED
-      res.status(201).json(db.insert(userData)) 
+      res.status(201).json(database.insert(userData)) 
     }
   } catch(error) {
     // 505 => INTERNAL SERVER ERROR
@@ -33,7 +33,7 @@ server.post(`/api/users`,  (req, res) => {
 server.get(`/api/users`, (req, res) => {
   try {
     // 200 => OK
-    const allUsers = db.find();
+    const allUsers = database.find();
     res.status(200).json(allUsers)
   } catch(error) {
     res.status(500).json({ error: "The users could not be retrieved." })
@@ -41,10 +41,10 @@ server.get(`/api/users`, (req, res) => {
 })
 
 // GET: Returns the user object with the specified `id`. 
-server.get('/api/users/:id', (req, res) => {
+server.get(`/api/users/:id`, (req, res) => {
   try {
     const id = req.params.id;
-    const foundUser = db.findById(id)
+    const foundUser = database.findById(id)
     if (foundUser.length === 0) {
       // 404 => NOT FOUND
       res.status(404).json({ message: "The user with the specified ID does not exist." })
@@ -60,7 +60,7 @@ server.get('/api/users/:id', (req, res) => {
 server.delete(`/api/users/:id`, (req,res) => {
   try {
     const id = req.params.id;
-    const usersDeleted = db.remove(id)
+    const usersDeleted = database.remove(id)
     if (usersDeleted.length === 0) {
       // 404 => NOT FOUND
       res.status(404).json({ message: "The user with the specified ID does not exist." })
@@ -77,13 +77,13 @@ server.put(`/api/users/:id`, (req,res) => {
   try {
     const id = req.params.id;
     const userData = req.body;
-    const usersUpdated = db.update(id, changes);
+    const usersUpdated = database.update(id, changes);
     if (userData.name.length === 0 || userData.bio.length === 0) {
       res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
     } else if (usersUpdated === 0) {
       res.status(404).json({ message: "The user with the specified ID does not exist." })
     } else {
-      res.status(200).json(db.findById(id));
+      res.status(200).json(database.findById(id));
     }
   } catch(error) {
     res.status(500).json({ error: "There was an error while saving the user to the database" })
