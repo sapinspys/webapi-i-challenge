@@ -9,10 +9,12 @@ const port = 5000;
 // Importing modules using require():
 const express = require('express');
 const db = require('./data/db.js');
+const cors = require('cors');
 
 // Creating an express application (used to configure our server):
 const server = express();
 server.use(express.json()); // ADD THIS LINE TO READ REQUEST BODIES...
+server.use(cors());
 
 // Setting up ROUTER HANDLER FUNCTIONS on ENDPOINTS:
 
