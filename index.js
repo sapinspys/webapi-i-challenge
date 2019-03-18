@@ -20,7 +20,7 @@ server.post(`/api/users`,  (req, res) => {
       res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
     } else {
       db.insert(userData)
-      res.status(201).json(userData)
+      res.status(201).json(userData) // 201 CREATED
     }
   } catch(error) {
     res.status(500).json({ error: "There was an error while saving the user to the database" })
@@ -28,9 +28,13 @@ server.post(`/api/users`,  (req, res) => {
 })
 
 // GET: returns an array of all the user objects contained in the database. 
-// server.get('/api/users', (req, res) => {
-
-// })
+server.get('/api/users', (req, res) => {
+  try {
+    res.status(200).json(db.find())
+  } catch(error) {
+    res.status(500).json({ error: "The users' information could not be retrieved." })
+  }
+})
 
 // Turning on the server:
 server.listen(5000, () =>
