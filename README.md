@@ -136,6 +136,8 @@ When the client makes a `PUT` request to `/api/users/:id`:
   - return HTTP status code `200` (OK).
   - return the newly updated _user document_.
 
+  MVP COMPLETE!
+
 ## Stretch Problems
 
 To work on the stretch problems you'll need to enable the `cors` middleware. Follow these steps:
